@@ -171,7 +171,7 @@ public:
                         draw_point = false;
                         if(print_tips) fl_message("Координаты второй точки: (%d, %d)", second.x, second.y);
                         update_lable_point();
-                        redraw();
+                        Fl::redraw();
                     }
                     break;
                 }
@@ -207,7 +207,6 @@ public:
         fl_color(FL_RED);
         fl_line(first.x, first.y, second.x, second.y);
         fl_line_style(0);
-        
     }
 };
 
@@ -314,6 +313,10 @@ void open_file_callback(Fl_Widget*, void*) {
 }
 
 void btn_set_point_callback(Fl_Widget *, void *){
+	if(!draggable_image->shared_image){
+		fl_message("Установить изоб");
+		return;
+	}
     if(print_tips) fl_message("Установите координаты для точек");
     draw_point = true;
 }
