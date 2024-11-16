@@ -6,7 +6,8 @@ Simple pixel ruller
 ### Algorithm:
 - upload jpg image
 - use "установить точки" to set points on picture
-- Enter your scale or count it by "Вычислить масштаб"
+- enter your scale or count it by "Вычислить масштаб"
+- Use your mouse and mousewheel to zoom and transport
 
 ### Hot Keys:
 - `CTRL + O` open image
