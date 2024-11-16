@@ -305,19 +305,23 @@ void quit_callback(Fl_Widget *, void *) {
 
 void open_file_callback(Fl_Widget*, void*) {
     file_chooser->show();
-    while (file_chooser->shown()) Fl::wait();
+    while (file_chooser->shown())
+        Fl::wait();
 
-    draggable_image->setImage(file_chooser->value());
-	Fl::redraw();
-	set_changed(true);
+    const char* file_path = file_chooser->value();
+    if(!file_chooser->count())
+    	return;
+    draggable_image->setImage(file_path);
+    Fl::redraw();
+    set_changed(true);
 }
 
 void btn_set_point_callback(Fl_Widget *, void *){
 	if(!draggable_image->shared_image){
-		fl_message("Установить изоб");
+		fl_alert("ошибка: установить изображение!");
 		return;
 	}
-    if(print_tips) fl_message("Установите координаты для точек");
+    if(print_tips) fl_message("Установите координаты для точек.");
     draw_point = true;
 }
 
