@@ -10,7 +10,7 @@
 bool is_image_open = false;
 bool draw_point = false;
 bool print_tips = true;
-double scale; 
+double original_scale;
 
 //==========================================================================
 
@@ -110,6 +110,19 @@ extern void update_lable_point();
 Point first;
 Point second;
 
+Fl_Window *ruller_window;
+Fl_Menu_Bar *ruller_menu_bar;
+Fl_File_Chooser *file_chooser;
+Fl_Output *label_image_height;
+Fl_Output *label_image_width;
+Fl_Output *label_point_first;
+Fl_Output *label_point_second;
+Fl_Input *input_scale;
+Fl_Button *btn_set_point;
+Fl_Button *btn_count_scale;
+Fl_Button *btn_count_length;
+Fl_Input *input_count_scale;
+
 class DraggableImage : public Fl_Widget {
     Fl_JPEG_Image* original_image;
     int drag_x, drag_y;
@@ -130,6 +143,12 @@ public:
 
 	    shared_image = (Fl_Shared_Image *)temp;
 
+	    if(original_scale){
+		    std::stringstream resultStream;
+	        resultStream << (original_scale/scale);
+	        input_scale->value(resultStream.str().c_str());	
+	    }
+        
 	    size(shared_image->w(), shared_image->h());
 	}
 
@@ -140,7 +159,7 @@ public:
 	    if (shared_image->w() > IMAGE_BOX_WIDTH || shared_image->h() > IMAGE_BOX_HEIGHT) {
 	        Fl_Image* temp;
 	        float aspect_ratio = static_cast<float>(shared_image->w()) / shared_image->h();
-	        
+
 	        if (shared_image->w() > shared_image->h()) {
 	            temp = shared_image->copy(IMAGE_BOX_WIDTH, static_cast<int>(IMAGE_BOX_WIDTH / aspect_ratio));
 	        } else {
@@ -210,19 +229,7 @@ public:
     }
 };
 
-Fl_Window *ruller_window;
-Fl_Menu_Bar *ruller_menu_bar;
-Fl_File_Chooser *file_chooser;
 DraggableImage *draggable_image;
-Fl_Output *label_image_height;
-Fl_Output *label_image_width;
-Fl_Output *label_point_first;
-Fl_Output *label_point_second;
-Fl_Input *input_scale;
-Fl_Button *btn_set_point;
-Fl_Button *btn_count_scale;
-Fl_Button *btn_count_length;
-Fl_Input *input_count_scale;
 
 Fl_Menu_Item ruller_menu_item[] = {
 	{"Открыть изображение...", FL_COMMAND + 'o', open_file_callback},
@@ -336,8 +343,10 @@ void btn_count_scale_callback(Fl_Widget *, void *) {
             return;
         }
 
+        original_scale = static_cast<double>(num) / distance;
+
         std::stringstream resultStream;
-        resultStream << static_cast<double>(num) / distance;
+        resultStream << original_scale;
 
         fl_message(resultStream.str().c_str());
         input_scale->value(resultStream.str().c_str());
