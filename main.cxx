@@ -342,7 +342,7 @@ void btn_count_scale_callback(Fl_Widget *, void *) {
         fl_message(resultStream.str().c_str());
         input_scale->value(resultStream.str().c_str());
     } else {
-        fl_alert("Ошибка: некорректный ввод величины");
+        fl_alert("Ошибка: некорректный ввод величины.");
     }
 }
 
