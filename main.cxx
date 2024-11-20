@@ -339,10 +339,11 @@ void btn_count_scale_callback(Fl_Widget *, void *) {
         }
 
         original_scale = static_cast<double>(num) / distance;
-
+		delta_scale = 1;
+		
         std::stringstream resultStream;
         resultStream << original_scale;
-        delta_scale = 1;
+    
         fl_message(resultStream.str().c_str());
         input_scale->value(resultStream.str().c_str());
     } else {
