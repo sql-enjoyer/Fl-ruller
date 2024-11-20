@@ -11,6 +11,8 @@ bool is_image_open = false;
 bool draw_point = false;
 bool print_tips = true;
 double original_scale;
+double delta_scale;
+double image_scale = 1;
 
 //==========================================================================
 
@@ -80,6 +82,9 @@ const int BTN_COUNT_LENGTH_HEIGHT = WIDGETS_HEIGHT;
 const int DRAGGBLE_IMAGE_X = 0;
 const int DRAGGBLE_IMAGE_Y = 0;
 
+const double DRAGGBLE_IMAGE_IMAGE_SCALE = 0.5;
+const double DRAGGBLE_IMAGE_DELTA_SCALE = 0.25;
+
 //==========================================================================
 
 extern void build_ruller_window();
@@ -126,7 +131,6 @@ Fl_Input *input_count_scale;
 class DraggableImage : public Fl_Widget {
     Fl_JPEG_Image* original_image;
     int drag_x, drag_y;
-    double scale = 1;
     bool p = false;
 
 public:
@@ -139,13 +143,14 @@ public:
 	    shared_image = Fl_Shared_Image::get(original_image);
 
 	    Fl_Image *temp;
-	    temp = shared_image->copy(static_cast<int>(shared_image->w() * scale), static_cast<int>(shared_image->h() * scale));
+	    temp = shared_image->copy(static_cast<int>(shared_image->w() * image_scale), static_cast<int>(shared_image->h() * image_scale));
 
 	    shared_image = (Fl_Shared_Image *)temp;
 
 	    if(original_scale){
 		    std::stringstream resultStream;
-	        resultStream << (original_scale/scale);
+	        resultStream << (original_scale/delta_scale);
+
 	        input_scale->value(resultStream.str().c_str());	
 	    }
         
@@ -156,18 +161,7 @@ public:
 	    original_image = new Fl_JPEG_Image(filename);
 	    shared_image = Fl_Shared_Image::get(original_image);
 
-	    if (shared_image->w() > IMAGE_BOX_WIDTH || shared_image->h() > IMAGE_BOX_HEIGHT) {
-	        Fl_Image* temp;
-	        float aspect_ratio = static_cast<float>(shared_image->w()) / shared_image->h();
-
-	        if (shared_image->w() > shared_image->h()) {
-	            temp = shared_image->copy(IMAGE_BOX_WIDTH, static_cast<int>(IMAGE_BOX_WIDTH / aspect_ratio));
-	        } else {
-	            temp = shared_image->copy(static_cast<int>(IMAGE_BOX_HEIGHT * aspect_ratio), IMAGE_BOX_HEIGHT);
-	        }
-	        shared_image = (Fl_Shared_Image *)temp;
-	    }
-
+	    image_scale = 1;
 	    size(shared_image->w(), shared_image->h());
 	    position(IMAGE_BOX_X, IMAGE_BOX_Y);
 	}
@@ -208,7 +202,8 @@ public:
                 return 1;
             }
 			case FL_MOUSEWHEEL: {
-			    scale *= Fl::event_dy() < 0 ? 1.1 : 0.9;
+			    image_scale += Fl::event_dy() < 0 ? DRAGGBLE_IMAGE_IMAGE_SCALE : -DRAGGBLE_IMAGE_IMAGE_SCALE;
+			    if(delta_scale) delta_scale += Fl::event_dy() < 0 ? DRAGGBLE_IMAGE_DELTA_SCALE : -DRAGGBLE_IMAGE_DELTA_SCALE;
 			    setScale();
 			    Fl::redraw();
 			    update_label_image_size();
@@ -347,7 +342,7 @@ void btn_count_scale_callback(Fl_Widget *, void *) {
 
         std::stringstream resultStream;
         resultStream << original_scale;
-
+        delta_scale = 1;
         fl_message(resultStream.str().c_str());
         input_scale->value(resultStream.str().c_str());
     } else {
