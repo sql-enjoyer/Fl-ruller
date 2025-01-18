@@ -1,89 +1,93 @@
-#include "fltk.h"
 #include "Point.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <sstream>
+#include "fltk.h"
 #include <cmath>
+#include <string>
 
 //==========================================================================
 
 bool is_image_open = false;
-bool draw_point = false;
-bool print_tips = true;
-double original_scale;
-double delta_scale;
-double image_scale = 1;
+bool draw_point = false;    // Флаг на расстовление точек
+bool print_tips = false;    // Флаг на демонстрацию подсказок
+                            // при расставлении точек
 
 //==========================================================================
 
-const int APP_WIDTH = 1000;
-const int APP_HEIGHT = 600;
-const char *APP_TITLE = "Рулетка";
+// Главное окно
+const int       APP_WIDTH = 1000;
+const int       APP_HEIGHT = 600;
+const char*     APP_TITLE = "Рулетка";
 
-const int WIDGETS_HEIGHT = 30;
+const int       WIDGETS_HEIGHT = 30;
 
-const int MENU_BAR_X = 0;
-const int MENU_BAR_Y = 0;
-const int MENU_BAR_HEIGHT = 25;
-const int MENU_BAR_WIDTH = APP_WIDTH;
+// Меню
+const int       MENU_BAR_X = 0;
+const int       MENU_BAR_Y = 0;
+const int       MENU_BAR_HEIGHT = 25;
+const int       MENU_BAR_WIDTH = APP_WIDTH;
 
-const int IMAGE_BOX_X = 10;
-const int IMAGE_BOX_Y = MENU_BAR_HEIGHT + 10;
-const int IMAGE_BOX_WIDTH = IMAGE_BOX_X + APP_WIDTH/1.5;
-const int IMAGE_BOX_HEIGHT = APP_HEIGHT - IMAGE_BOX_Y - 10;
+// Изображение
+const int       DRAGGBLE_IMAGE_X = 10;
+const int       DRAGGBLE_IMAGE_Y = MENU_BAR_HEIGHT + 10;
+const int       DRAGGBLE_IMAGE_WIDTH = DRAGGBLE_IMAGE_X + APP_WIDTH/1.5;
+const int       DRAGGBLE_IMAGE_HEIGHT = APP_HEIGHT - DRAGGBLE_IMAGE_Y - 10;
+const double    DRAGGBLE_IMAGE_IMAGE_SCALE = 0.1;   // Изменение масштаба при
+                                                    // приближенни колесиком
 
-const int LABEL_IMAGE_HEIGHT_X = IMAGE_BOX_X+IMAGE_BOX_WIDTH+100;
-const int LABEL_IMAGE_HEIGHT_Y = MENU_BAR_HEIGHT + 80;
-const int LABEL_IMAGE_HEIGHT_WIDTH = 50;
-const int LABEL_IMAGE_HEIGHT_HEIGHT = WIDGETS_HEIGHT;
+// Вывод высоты изображения
+const int       LABEL_IMAGE_HEIGHT_X = DRAGGBLE_IMAGE_X+DRAGGBLE_IMAGE_WIDTH+100;
+const int       LABEL_IMAGE_HEIGHT_Y = MENU_BAR_HEIGHT + 80;
+const int       LABEL_IMAGE_HEIGHT_WIDTH = 50;
+const int       LABEL_IMAGE_HEIGHT_HEIGHT = WIDGETS_HEIGHT;
 
-const int LABEL_IMAGE_WIDTH_X = LABEL_IMAGE_HEIGHT_X+145;
-const int LABEL_IMAGE_WIDTH_Y = LABEL_IMAGE_HEIGHT_Y;
-const int LABEL_IMAGE_WIDTH_WIDTH = LABEL_IMAGE_HEIGHT_WIDTH;
-const int LABEL_IMAGE_WIDTH_HEIGHT = WIDGETS_HEIGHT;
+// Вывод длины изображения
+const int       LABEL_IMAGE_WIDTH_X = LABEL_IMAGE_HEIGHT_X+145;
+const int       LABEL_IMAGE_WIDTH_Y = LABEL_IMAGE_HEIGHT_Y;
+const int       LABEL_IMAGE_WIDTH_WIDTH = LABEL_IMAGE_HEIGHT_WIDTH;
+const int       LABEL_IMAGE_WIDTH_HEIGHT = WIDGETS_HEIGHT;
 
-const int LABEL_IMAGE_LABEL_SIZE = 20;
+const int       LABEL_IMAGE_LABEL_SIZE = 20;
 
-const int LABEL_POINT_FIRST_X = LABEL_IMAGE_HEIGHT_X-55;
-const int LABEL_POINT_FIRST_Y = LABEL_IMAGE_HEIGHT_Y + 70;
-const int LABEL_POINT_FIRST_WIDTH = 100;
-const int LABEL_POINT_FIRST_HEIGHT = WIDGETS_HEIGHT;
+// Вывод координат первой точки
+const int       LABEL_POINT_FIRST_X = LABEL_IMAGE_HEIGHT_X-55;
+const int       LABEL_POINT_FIRST_Y = LABEL_IMAGE_HEIGHT_Y + 70;
+const int       LABEL_POINT_FIRST_WIDTH = 100;
+const int       LABEL_POINT_FIRST_HEIGHT = WIDGETS_HEIGHT;
 
-const int LABEL_POINT_SECOND_X = LABEL_POINT_FIRST_X+130;
-const int LABEL_POINT_SECOND_Y = LABEL_POINT_FIRST_Y;
-const int LABEL_POINT_SECOND_WIDTH = LABEL_POINT_FIRST_WIDTH;
-const int LABEL_POINT_SECOND_HEIGHT = LABEL_POINT_FIRST_HEIGHT;
+// Вывод координат второй точки
+const int       LABEL_POINT_SECOND_X = LABEL_POINT_FIRST_X+130;
+const int       LABEL_POINT_SECOND_Y = LABEL_POINT_FIRST_Y;
+const int       LABEL_POINT_SECOND_WIDTH = LABEL_POINT_FIRST_WIDTH;
+const int       LABEL_POINT_SECOND_HEIGHT = LABEL_POINT_FIRST_HEIGHT;
 
-const int BTN_SET_POINT_X = LABEL_IMAGE_HEIGHT_X - 40;
-const int BTN_SET_POINT_Y = LABEL_POINT_FIRST_Y + 40;
-const int BTN_SET_POINT_WIDTH = 200;
-const int BTN_SET_POINT_HEIGHT = WIDGETS_HEIGHT;
+// Кнопка для активации расставления точек
+const int       BTN_SET_POINT_X = LABEL_IMAGE_HEIGHT_X - 40;
+const int       BTN_SET_POINT_Y = LABEL_POINT_FIRST_Y + 40;
+const int       BTN_SET_POINT_WIDTH = 200;
+const int       BTN_SET_POINT_HEIGHT = WIDGETS_HEIGHT;
 
-const int INPUT_COUNT_SCALE_X = BTN_SET_POINT_X+35;
-const int INPUT_COUNT_SCALE_Y = BTN_SET_POINT_Y+50;
-const int INPUT_COUNT_SCALE_WIDTH = 100;
-const int INPUT_COUNT_SCALE_HEIGHT = WIDGETS_HEIGHT;
+// Введенная величина
+const int       INPUT_COUNT_SCALE_X = BTN_SET_POINT_X+35;
+const int       INPUT_COUNT_SCALE_Y = BTN_SET_POINT_Y+50;
+const int       INPUT_COUNT_SCALE_WIDTH = 100;
+const int       INPUT_COUNT_SCALE_HEIGHT = WIDGETS_HEIGHT;
 
-const int BTN_COUNT_SCALE_X = BTN_SET_POINT_X;
-const int BTN_COUNT_SCALE_Y = INPUT_COUNT_SCALE_Y+40;
-const int BTN_COUNT_SCALE_WIDTH = 200;
-const int BTN_COUNT_SCALE_HEIGHT = WIDGETS_HEIGHT;
+// Кнопка расчета масштаба по заданным точкам
+const int       BTN_COUNT_SCALE_X = BTN_SET_POINT_X;
+const int       BTN_COUNT_SCALE_Y = INPUT_COUNT_SCALE_Y+40;
+const int       BTN_COUNT_SCALE_WIDTH = 200;
+const int       BTN_COUNT_SCALE_HEIGHT = WIDGETS_HEIGHT;
 
-const int INPUT_SCALE_X = BTN_COUNT_SCALE_X+50;
-const int INPUT_SCALE_Y = BTN_COUNT_SCALE_Y+50;
-const int INPUT_SCALE_WIDTH = 100;
-const int INPUT_SCALE_HEIGHT = WIDGETS_HEIGHT;
+// Текущий масштаб
+const int       INPUT_SCALE_X = BTN_COUNT_SCALE_X+50;
+const int       INPUT_SCALE_Y = BTN_COUNT_SCALE_Y+50;
+const int       INPUT_SCALE_WIDTH = 100;
+const int       INPUT_SCALE_HEIGHT = WIDGETS_HEIGHT;
 
-const int BTN_COUNT_LENGTH_X = BTN_SET_POINT_X;
-const int BTN_COUNT_LENGTH_Y = INPUT_SCALE_Y+40;
-const int BTN_COUNT_LENGTH_WIDTH = 200;
-const int BTN_COUNT_LENGTH_HEIGHT = WIDGETS_HEIGHT;
-
-const int DRAGGBLE_IMAGE_X = 0;
-const int DRAGGBLE_IMAGE_Y = 0;
-
-const double DRAGGBLE_IMAGE_IMAGE_SCALE = 0.5;
-const double DRAGGBLE_IMAGE_DELTA_SCALE = 0.25;
+// Расчет расстояния между заданными точками по масштабу
+const int       BTN_COUNT_LENGTH_X = BTN_SET_POINT_X;
+const int       BTN_COUNT_LENGTH_Y = INPUT_SCALE_Y+40;
+const int       BTN_COUNT_LENGTH_WIDTH = 200;
+const int       BTN_COUNT_LENGTH_HEIGHT = WIDGETS_HEIGHT;
 
 //==========================================================================
 
@@ -110,79 +114,95 @@ extern void update_title();
 extern void update_label_image_size();
 extern void update_lable_point();
 
+template<class T>
+extern const char* num_to_cstr(T num);
+extern const bool is_number(const char* cstr);
+
 //==========================================================================
+
+Fl_Window*          ruller_window;
+Fl_File_Chooser*    file_chooser;
+Fl_Output*          label_image_height;
+Fl_Output*          label_image_width;
+Fl_Output*          label_point_first;
+Fl_Output*          label_point_second;
+Fl_Input*           input_scale;
+Fl_Button*          btn_set_point;
+Fl_Button*          btn_count_scale;
+Fl_Button*          btn_count_length;
+Fl_Input*           input_count_scale;
+
+Fl_Menu_Bar*        ruller_menu_bar;
+Fl_Menu_Item        ruller_menu_item[] = 
+{
+    {"Открыть изображение...", FL_COMMAND + 'o', open_file_callback},
+    {"Подсказки", FL_ALT + 't', check_tips_callback, nullptr, FL_MENU_TOGGLE | FL_MENU_VALUE},
+    {"Выйти", FL_COMMAND + 'q', quit_callback},
+    { 0 }
+};
 
 Point first;
 Point second;
 
-Fl_Window *ruller_window;
-Fl_Menu_Bar *ruller_menu_bar;
-Fl_File_Chooser *file_chooser;
-Fl_Output *label_image_height;
-Fl_Output *label_image_width;
-Fl_Output *label_point_first;
-Fl_Output *label_point_second;
-Fl_Input *input_scale;
-Fl_Button *btn_set_point;
-Fl_Button *btn_count_scale;
-Fl_Button *btn_count_length;
-Fl_Input *input_count_scale;
-
 class DraggableImage : public Fl_Widget {
-    Fl_JPEG_Image* original_image;
+    Fl_Shared_Image* original_image;
+    Fl_Shared_Image* shared_image;
     int drag_x, drag_y;
-    bool p = false;
+    int initial_x, initial_y;
+    int image_scale;
+    bool point_flag = false;
 
 public:
-    Fl_Shared_Image *shared_image;
 
-    DraggableImage(int X, int Y) : Fl_Widget(IMAGE_BOX_X, IMAGE_BOX_Y, 0, 0){}
+    DraggableImage(int x, int y) : Fl_Widget(x, y, 0, 0),
+                                   original_image(nullptr),
+                                   shared_image(nullptr),
+                                   initial_x(x),
+                                   initial_y(y),
+                                   drag_x(0),
+                                   drag_y(0) { fl_register_images(); }
 
-	void setScale() {
+    void setImage(const char* filename) {
+        original_image = Fl_Shared_Image::get(filename);
+        shared_image = static_cast<Fl_Shared_Image*>(original_image->copy());
 
-	    shared_image = Fl_Shared_Image::get(original_image);
+        image_scale = 1;
+        size(shared_image->w(), shared_image->h());
+        position(initial_x, initial_y);
+    }
 
-	    Fl_Image *temp;
-	    temp = shared_image->copy(static_cast<int>(shared_image->w() * image_scale), static_cast<int>(shared_image->h() * image_scale));
+    void setScale() {
+        Fl_Image* temp = original_image->copy(
+            static_cast<int>(original_image->w() * image_scale), 
+            static_cast<int>(original_image->h() * image_scale)
+        );
 
-	    shared_image = (Fl_Shared_Image *)temp;
+        if (shared_image)
+            shared_image->release();
 
-	    if(original_scale){
-		    std::stringstream resultStream;
-	        resultStream << (original_scale/delta_scale);
-
-	        input_scale->value(resultStream.str().c_str());	
-	    }
-        
-	    size(shared_image->w(), shared_image->h());
-	}
-
-	void setImage(const char* filename) {
-	    original_image = new Fl_JPEG_Image(filename);
-	    shared_image = Fl_Shared_Image::get(original_image);
-
-	    image_scale = 1;
-	    size(shared_image->w(), shared_image->h());
-	    position(IMAGE_BOX_X, IMAGE_BOX_Y);
-	}
+        shared_image = static_cast<Fl_Shared_Image*>(temp);
+        size(shared_image->w(), shared_image->h());
+    }
 
     int handle(int event) {
         switch(event) {
-            case FL_PUSH:{
+            case FL_PUSH: {
                 if (draw_point) {
                     int x = Fl::event_x();
                     int y = Fl::event_y();
-                    if (!p) {
+                    if (!point_flag) {
                         first.x = x;
                         first.y = y;
-                        p = true;
-                        if(print_tips) fl_message("Координаты первой точки: (%d, %d)", first.x, first.y);
+                        point_flag = true;
+                        if(print_tips) 
+                            fl_message("Координаты первой точки: (%d, %d)", first.x, first.y);
                     } else {
                         second.x = x;
                         second.y = y;
-                        p = false;
+                        point_flag = false;
                         draw_point = false;
-                        if(print_tips) fl_message("Координаты второй точки: (%d, %d)", second.x, second.y);
+                        if(print_tips)
+                            fl_message("Координаты второй точки: (%d, %d)", second.x, second.y);
                         update_lable_point();
                         Fl::redraw();
                     }
@@ -192,7 +212,7 @@ public:
                 drag_y = Fl::event_y();
                 return 1;
             }
-            case FL_DRAG:{
+            case FL_DRAG: {
                 int dx = Fl::event_x() - drag_x;
                 int dy = Fl::event_y() - drag_y;
                 position(x() + dx, y() + dy);
@@ -203,7 +223,6 @@ public:
             }
 			case FL_MOUSEWHEEL: {
 			    image_scale += Fl::event_dy() < 0 ? DRAGGBLE_IMAGE_IMAGE_SCALE : -DRAGGBLE_IMAGE_IMAGE_SCALE;
-			    if(delta_scale) delta_scale += Fl::event_dy() < 0 ? DRAGGBLE_IMAGE_DELTA_SCALE : -DRAGGBLE_IMAGE_DELTA_SCALE;
 			    setScale();
 			    Fl::redraw();
 			    update_label_image_size();
@@ -226,13 +245,6 @@ public:
 
 DraggableImage *draggable_image;
 
-Fl_Menu_Item ruller_menu_item[] = {
-	{"Открыть изображение...", FL_COMMAND + 'o', open_file_callback},
-	{"Подсказки", FL_ALT + 't', check_tips_callback, nullptr, FL_MENU_TOGGLE | FL_MENU_VALUE},
-	{"Выйти", FL_COMMAND + 'q', quit_callback},
-	{ 0 }
-};
-
 //==========================================================================
 
 void build_ruller_window() {
@@ -240,16 +252,16 @@ void build_ruller_window() {
 	ruller_window->callback(quit_callback);
 }
 
-void build_ruller_menu_bar(){
+void build_ruller_menu_bar() {
 	ruller_menu_bar = new Fl_Menu_Bar(MENU_BAR_X, MENU_BAR_Y, MENU_BAR_WIDTH, MENU_BAR_HEIGHT);
 	ruller_menu_bar->copy(ruller_menu_item);
 }
 
-void build_file_chooser(){
-	file_chooser = new Fl_File_Chooser(".", "*.{jpg,jpeg}", Fl_File_Chooser::SINGLE, "Выберите изображение");
+void build_file_chooser() {
+	file_chooser = new Fl_File_Chooser(".", "*.{bmp,gif,jpg,jpeg,png,xbm,xpm}", Fl_File_Chooser::SINGLE, "Выберите изображение");
 }
 
-void build_label_image_size(){
+void build_label_image_size() {
 	label_image_height = new Fl_Output(LABEL_IMAGE_HEIGHT_X, LABEL_IMAGE_HEIGHT_Y, LABEL_IMAGE_HEIGHT_WIDTH, LABEL_IMAGE_HEIGHT_HEIGHT, "Высота:");
 	label_image_width = new Fl_Output(LABEL_IMAGE_WIDTH_X, LABEL_IMAGE_WIDTH_Y, LABEL_IMAGE_WIDTH_WIDTH, LABEL_IMAGE_WIDTH_HEIGHT, "Длина:");
 
@@ -265,152 +277,190 @@ void build_label_image_size(){
 	update_label_image_size();
 }
 
-void build_label_point(){
+void build_label_point() {
 	label_point_first = new Fl_Output(LABEL_POINT_FIRST_X, LABEL_POINT_FIRST_Y, LABEL_POINT_FIRST_WIDTH, LABEL_POINT_FIRST_HEIGHT, "1:");
 	label_point_second = new Fl_Output(LABEL_POINT_SECOND_X, LABEL_POINT_SECOND_Y, LABEL_POINT_SECOND_WIDTH, LABEL_POINT_SECOND_HEIGHT, "2:");
 } 
 
-void build_btn_set_point(){
+void build_btn_set_point() {
 	btn_set_point = new Fl_Button(BTN_SET_POINT_X, BTN_SET_POINT_Y, BTN_SET_POINT_WIDTH, BTN_SET_POINT_HEIGHT, "Установить точки");
 	btn_set_point->callback(btn_set_point_callback);
 }
 
-void build_input_count_scale(){
+void build_input_count_scale() {
 	input_count_scale = new Fl_Input(INPUT_COUNT_SCALE_X, INPUT_COUNT_SCALE_Y, INPUT_COUNT_SCALE_WIDTH, INPUT_COUNT_SCALE_HEIGHT, "Величина:");
 }
 
-void build_btn_count_scale(){
+void build_btn_count_scale() {
 	btn_count_scale = new Fl_Button(BTN_COUNT_SCALE_X, BTN_COUNT_SCALE_Y, BTN_COUNT_SCALE_WIDTH, BTN_COUNT_SCALE_HEIGHT, "Вычислить масштаб");
 	btn_count_scale->callback(btn_count_scale_callback);
 }
 
-void build_input_scale(){
+void build_input_scale() {
 	input_scale = new Fl_Input(INPUT_SCALE_X, INPUT_SCALE_Y, INPUT_SCALE_WIDTH, INPUT_SCALE_HEIGHT, "Масштаб:");
 }
 
-void build_btn_count_length(){
+void build_btn_count_length() {
 	btn_count_length = new Fl_Button(BTN_COUNT_LENGTH_X, BTN_COUNT_LENGTH_Y, BTN_COUNT_LENGTH_WIDTH, BTN_COUNT_LENGTH_HEIGHT, "Вычислить длину");
 	btn_count_length->callback(btn_count_length_callback);
 }
 
-void build_draggble_image(){
+void build_draggble_image() {
 	draggable_image = new DraggableImage(DRAGGBLE_IMAGE_X, DRAGGBLE_IMAGE_Y);
 }
 
 //==========================================================================
 
+// Вызывается при выходе из приложения
 void quit_callback(Fl_Widget *, void *) {
-	int ans = fl_choice("Вы действительно хотите выйти?", "Нет", "Да", NULL);
-	if (ans == 1)
-		exit(0);
+    if(is_image_open) {
+        int ans = fl_choice("Вы действительно хотите выйти?", "Нет", "Да", NULL);
+        if (ans == 1)
+            exit(0);
+    }
+    else 
+        exit(0);
 }
 
-void open_file_callback(Fl_Widget*, void*) {
+// Вызывается при выборе файла
+void open_file_callback(Fl_Widget *, void *) {
+    // Ждем пока пользователь выберет файл
     file_chooser->show();
     while (file_chooser->shown())
         Fl::wait();
+    // Выходим, если не выбран файл
+    if(!file_chooser->count())
+        return;
 
     const char* file_path = file_chooser->value();
-    if(!file_chooser->count())
-    	return;
     draggable_image->setImage(file_path);
-    Fl::redraw();
     set_changed(true);
+    Fl::redraw();
 }
 
-void btn_set_point_callback(Fl_Widget *, void *){
-	if(!draggable_image->shared_image){
-		fl_alert("ошибка: установить изображение!");
+// Переходим в режим расстановки точек на изображении
+void btn_set_point_callback(Fl_Widget *, void *) {
+	if(!is_image_open) {
+		fl_alert("Ошибка: выберете изображение!");
 		return;
 	}
-    if(print_tips) fl_message("Установите координаты для точек.");
+    if(print_tips) fl_message("Установите точки на изображении.");
     draw_point = true;
 }
 
+// Считаем масштаб
 void btn_count_scale_callback(Fl_Widget *, void *) {
-    std::stringstream ss(input_count_scale->value());
-    int num;
-    
-    if (ss >> num) {
-        double distance = sqrt(pow(second.x - first.x, 2) + pow(second.y - first.y, 2));
+    const char* cstr_scale = input_count_scale->value();
+
+    if (is_number(cstr_scale)) {
+        // Считаем кол-во пикселей между точками по теореме Пифагора
+        double distance = 
+            sqrt(pow(second.x - first.x, 2) + pow(second.y - first.y, 2));
+
         if (distance == 0) {
-            fl_alert("Ошибка: точки совпадают, деление на ноль!");
+            fl_alert("Ошибка: точки совпадают!");
             return;
         }
-
-        original_scale = static_cast<double>(num) / distance;
-		delta_scale = 1;
 		
-        std::stringstream resultStream;
-        resultStream << original_scale;
-    
-        fl_message(resultStream.str().c_str());
-        input_scale->value(resultStream.str().c_str());
-    } else {
-        fl_alert("Ошибка: некорректный ввод величины.");
+        // Находим масштаб
+        double scale = 
+            (static_cast<double>(std::stod(cstr_scale)) / distance);
+
+        fl_message(num_to_cstr(scale));
+        input_scale->value(num_to_cstr(scale));
+    } 
+    else
+        fl_alert("Ошибка: некорректный ввод величины!");
+}
+
+// Считаем расстояния между заданными точками
+void btn_count_length_callback(Fl_Widget *, void *) {
+    if(!is_number(input_scale->value())) {
+        fl_alert("Ошибка: масштаб может состоять только из цифр!");
+        return;
     }
+
+    double scale = std::stod(input_scale->value());
+    if(scale == 0.0) {
+        fl_alert("Ошибка: масштаб равен нулю!");
+        return;
+    }
+
+    // Находим кол-во пикселей между точками по теореме Пифагора)
+    // не забываем про
+    double distance =
+        sqrt(pow(second.x - first.x, 2) + pow(second.y - first.y, 2))*scale;
+
+    // Учитываем масштаб при выводе значения
+    fl_message("Результат: %f", distance);
 }
 
-void btn_count_length_callback(Fl_Widget *, void *){
-    std::stringstream resultStream;
-    resultStream << "Результат: ";
-    resultStream << sqrt(pow(second.x - first.x, 2) + pow(second.y - first.y, 2))*atof(input_scale->value());
-
-    fl_message(resultStream.str().c_str());
-}
-
-void check_tips_callback(Fl_Widget *, void *){
+// Включение/выключение подсказок
+void check_tips_callback(Fl_Widget *, void *) {
 	print_tips = !print_tips;
 }
 
 //==========================================================================
 
-void set_changed(bool v){
-	if (v != is_image_open) {
-		is_image_open = v;
-		update_title();
-		update_label_image_size();
-	}
+// Вносим изменения после
+void set_changed(bool v) {
+	is_image_open = v;
+    update_title();
+    update_label_image_size();
 }
 
+// Обновление заголовка приложения
 void update_title() {
     if (is_image_open) {
         char title[260];
         snprintf(title, sizeof(title), "%s - %s", APP_TITLE, file_chooser->value());
         ruller_window->copy_label(title);
-    } else {
+    }
+    else
         ruller_window->label(APP_TITLE); 
+}
+
+// Обновление вывода размера текущего изображения
+void update_label_image_size() {
+    if(is_image_open) {
+        label_image_height->value(num_to_cstr(draggable_image->h()));
+        label_image_width->value(num_to_cstr(draggable_image->w()));
+    }
+    else {
+    	label_image_height->value("0");
+    	label_image_width->value("0");
     }
 }
 
-void update_label_image_size(){
-    auto update_label = [](Fl_Output* label, int value) {
-        std::ostringstream oss;
-        oss << value;
-        label->value(oss.str().c_str());
-    };
-    if(is_image_open){
-        update_label(label_image_height, draggable_image->shared_image->h());
-        update_label(label_image_width, draggable_image->shared_image->w());
-    }else{
-    	label_image_height->value("");
-    	label_image_width->value("");
-    }
-}
+// Обновление вывода координат точек
+void update_lable_point() {
+    if(is_image_open) {
+        std::string labelText; // Строка для форматирования вывода размеров изображения
 
-void update_lable_point(){
-    auto update_label = [](Fl_Output* label, int i, int j) {
-        std::ostringstream oss;
-        oss << i << ' ' << j;
-        label->value(oss.str().c_str());
-    };
-    if(is_image_open){
-    	update_label(label_point_first, first.x, first.y);
-    	update_label(label_point_second, second.x, second.y);	
-    }else{
+        labelText = std::to_string(first.x) + ' ' + std::to_string(first.y);
+        label_point_first->value(labelText.c_str());
+
+    	labelText = std::to_string(second.x) + ' ' + std::to_string(second.y);
+    	label_point_second->value(labelText.c_str());
+    }
+    else {
     	label_point_first->value("");
     	label_point_second->value("");
     }
+}
+
+// Перевод числа в с-строку
+template<class T>
+const char* num_to_cstr(T num) {
+    static std::string str;
+    str = std::to_string(num);
+    return str.c_str();
+}
+
+// Проверка строки на число
+const bool is_number(const char* cstr) {
+    std::string s = cstr;
+    return !s.empty() && s.find_first_not_of(".0123456789") == std::string::npos;
 }
 
 //==========================================================================
