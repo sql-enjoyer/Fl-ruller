@@ -1,8 +1,8 @@
 # Имя исполняемого файла
-TARGET = a.out
+TARGET = ruller
 
 # Исходный файл
-SRC = main.cxx
+SRC = src/main.cxx
 
 # Компилятор и флаги
 CXX = g++
