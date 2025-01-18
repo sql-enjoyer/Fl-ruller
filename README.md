@@ -14,8 +14,6 @@ Simple pixel ruller
 - `CTRL + T` enable/disable tips
 - `CTRL + Q` quit
 
-**!!! Use only jpg/jpeg images**
-
 ## Main Files:
 - `fltk.h` includes fltk headers
 - `main.cxx` main file with code
