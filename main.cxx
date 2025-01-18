@@ -7,7 +7,7 @@
 
 bool is_image_open = false;
 bool draw_point = false;    // Флаг на расстовление точек
-bool print_tips = false;    // Флаг на демонстрацию подсказок
+bool print_tips = true;     // Флаг на демонстрацию подсказок
                             // при расставлении точек
 
 //==========================================================================
@@ -120,7 +120,7 @@ extern const bool is_number(const char* cstr);
 
 //==========================================================================
 
-Fl_Window*          ruller_window;
+Fl_Double_Window*   ruller_window;
 Fl_File_Chooser*    file_chooser;
 Fl_Output*          label_image_height;
 Fl_Output*          label_image_width;
@@ -145,13 +145,13 @@ Point first;
 Point second;
 
 class DraggableImage : public Fl_Widget {
-    Fl_Shared_Image* original_image;
-    Fl_Shared_Image* shared_image;
-    int drag_x, drag_y;
-    int initial_x, initial_y;
-    int image_scale;
-    bool point_flag = false;
-
+    Fl_Shared_Image* original_image;    // Оригинальное изображение
+    Fl_Shared_Image* shared_image;      // Масштабированное изображение
+    int drag_x, drag_y;                 // Координаты нажатий по изображению
+    int initial_x, initial_y;           // Начальные координаты
+    double image_scale;                    // Масштаб
+    bool point_flag = false;            // Для чередования при
+                                        // при расставлении точек
 public:
 
     DraggableImage(int x, int y) : Fl_Widget(x, y, 0, 0),
@@ -161,71 +161,93 @@ public:
                                    initial_y(y),
                                    drag_x(0),
                                    drag_y(0) { fl_register_images(); }
-
+    // Устанавливаем изображения
     void setImage(const char* filename) {
+        if(original_image) {
+            original_image->release();
+            shared_image->release();
+        }
+
+        image_scale = 1.0;
         original_image = Fl_Shared_Image::get(filename);
         shared_image = static_cast<Fl_Shared_Image*>(original_image->copy());
 
-        image_scale = 1;
         size(shared_image->w(), shared_image->h());
         position(initial_x, initial_y);
     }
 
+    // Устанавливаем изображение нужного масштаба
     void setScale() {
+        // Временное изображение нужного размера
         Fl_Image* temp = original_image->copy(
             static_cast<int>(original_image->w() * image_scale), 
             static_cast<int>(original_image->h() * image_scale)
         );
 
-        if (shared_image)
-            shared_image->release();
+        // if (shared_image)
+        //     shared_image->release();
 
         shared_image = static_cast<Fl_Shared_Image*>(temp);
         size(shared_image->w(), shared_image->h());
     }
 
     int handle(int event) {
-        switch(event) {
-            case FL_PUSH: {
+        switch(event)
+        {
+            case FL_PUSH:
+            {
+                // Сохраняем следующие координаты при перемещении
+                drag_x = Fl::event_x();
+                drag_y = Fl::event_y();
+                // Смотрим на флаг
                 if (draw_point) {
-                    int x = Fl::event_x();
-                    int y = Fl::event_y();
+                    // Выбираем какую точку ставить
                     if (!point_flag) {
-                        first.x = x;
-                        first.y = y;
+                        // Сохраняем координаты точек
+                        first.x = drag_x;
+                        first.y = drag_y;
+                        //Поднимаем флаг на следующую точку
                         point_flag = true;
+
                         if(print_tips) 
                             fl_message("Координаты первой точки: (%d, %d)", first.x, first.y);
-                    } else {
-                        second.x = x;
-                        second.y = y;
+                    } 
+                    else {
+                        // Сохраняем координаты точек
+                        second.x = drag_x;
+                        second.y = drag_y;
+                        // Опускаем флаги
                         point_flag = false;
                         draw_point = false;
+
                         if(print_tips)
                             fl_message("Координаты второй точки: (%d, %d)", second.x, second.y);
                         update_lable_point();
                         Fl::redraw();
                     }
-                    break;
                 }
-                drag_x = Fl::event_x();
-                drag_y = Fl::event_y();
                 return 1;
             }
-            case FL_DRAG: {
+            case FL_DRAG:
+            {
+                // Находим разницу при перемещении
                 int dx = Fl::event_x() - drag_x;
                 int dy = Fl::event_y() - drag_y;
+                // Перемещение на разницу
                 position(x() + dx, y() + dy);
+                // Сохраняем следующие координаты при перемещении
                 drag_x = Fl::event_x();
                 drag_y = Fl::event_y();
                 Fl::redraw();
                 return 1;
             }
-			case FL_MOUSEWHEEL: {
+			case FL_MOUSEWHEEL:
+            {
+                // Изменяем значение текущего масштаба 
 			    image_scale += Fl::event_dy() < 0 ? DRAGGBLE_IMAGE_IMAGE_SCALE : -DRAGGBLE_IMAGE_IMAGE_SCALE;
 			    setScale();
-			    Fl::redraw();
 			    update_label_image_size();
+                Fl::redraw();
 			    return 1;
 			}
         }
@@ -236,6 +258,7 @@ public:
         if (shared_image) 
             shared_image->draw(x(), y());
 
+        // Проводим линию между заданными точками
         fl_line_style(FL_SOLID, 5);
         fl_color(FL_RED);
         fl_line(first.x, first.y, second.x, second.y);
@@ -248,7 +271,7 @@ DraggableImage *draggable_image;
 //==========================================================================
 
 void build_ruller_window() {
-	ruller_window = new Fl_Window(APP_WIDTH, APP_HEIGHT, APP_TITLE);
+	ruller_window = new Fl_Double_Window(APP_WIDTH, APP_HEIGHT, APP_TITLE);
 	ruller_window->callback(quit_callback);
 }
 
