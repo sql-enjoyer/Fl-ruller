@@ -4,7 +4,7 @@ Simple pixel ruller
 
 ## How to measure
 ### Algorithm:
-- upload jpg image
+- upload image
 - use "установить точки" to set points on picture
 - enter your scale or count it by "Вычислить масштаб"
 - Use your mouse and mousewheel to zoom and transport
