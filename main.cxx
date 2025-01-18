@@ -184,6 +184,8 @@ public:
             static_cast<int>(original_image->h() * image_scale)
         );
 
+        // Здесь происходит утечка ресурсов, пока не понимаю как фиксить
+        // Раскоменеть код ниже что бы увидеть дамп памяти
         // if (shared_image)
         //     shared_image->release();
 
