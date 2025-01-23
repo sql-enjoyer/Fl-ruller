@@ -149,7 +149,7 @@ class DraggableImage : public Fl_Widget {
     Fl_Shared_Image* shared_image;      // Масштабированное изображение
     int drag_x, drag_y;                 // Координаты нажатий по изображению
     int initial_x, initial_y;           // Начальные координаты
-    double image_scale;                    // Масштаб
+    double image_scale;                 // Масштаб
     bool point_flag = false;            // Для чередования при
                                         // при расставлении точек
 public:
@@ -185,7 +185,7 @@ public:
         );
 
         // Здесь происходит утечка ресурсов, пока не понимаю как фиксить
-        // Раскоменеть код ниже что бы увидеть дамп памяти
+        // Раскоменть код ниже что бы увидеть дамп памяти
         // if (shared_image)
         //     shared_image->release();
 
@@ -194,6 +194,9 @@ public:
     }
 
     int handle(int event) {
+        if(!shared_image)
+            return Fl_Widget::handle(event);
+             
         switch(event)
         {
             case FL_PUSH:
