@@ -1,24 +1,38 @@
-# Имя исполняемого файла
 TARGET = ruller
+SRC_DIR = src
+BUILD_DIR = build
 
-# Исходный файл
-SRC = src/main.cxx
+SRC = $(SRC_DIR)/Globals.cxx \
+      $(SRC_DIR)/Point.cxx \
+      $(SRC_DIR)/main.cxx \
+      $(SRC_DIR)/GUI.cxx \
+      $(SRC_DIR)/DraggableImage.cxx \
+      $(SRC_DIR)/Utils.cxx \
+      $(SRC_DIR)/Callbacks.cxx
 
-# Компилятор и флаги
+INCLUDES = -I$(SRC_DIR)
+
 CXX = g++
-CXXFLAGS = -lfltk -lfltk_images
+CXXFLAGS = -std=gnu++17 $(INCLUDES)
+LDFLAGS = -lfltk_images -lfltk -lpng -ljpeg -lz
 
-# Правило по умолчанию
-all: $(TARGET) run
+OBJ = $(SRC:$(SRC_DIR)/%.cxx=$(BUILD_DIR)/%.o)
 
-# Сборка исполняемого файла
-$(TARGET): $(SRC)
-	$(CXX) $(SRC) $(CXXFLAGS) -o $(TARGET)
+all: $(BUILD_DIR) $(TARGET) run
 
-# Запуск программы
+$(BUILD_DIR):
+	@mkdir -p $@
+
+$(TARGET): $(OBJ)
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cxx
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 run:
-	./$(TARGET)
+	@./$(TARGET)
 
-# Очистка сгенерированных файлов
 clean:
-	rm -f $(TARGET)
+	@rm -rf $(BUILD_DIR) $(TARGET)
+
+.PHONY: all run clean
